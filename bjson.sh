@@ -27,13 +27,6 @@ BJSON_CODEINTERNALERR=74
 #   4. 函数名都采用 "小写字母+下划线" 的格式命名。
 #   5. 全局变量使用 "大写字母+下划线" 的命名格式。
 #
-# REPLY 在bash5.3 中，支持下面的语法错误子函数的输出
-#   cmd_result=${ | sub_function; }
-#   我们先使用REPLY作为输出，在老版本的bash中可以
-#   local REPLY cmd_result
-#   sub_function ; cmd_result=$REPLY
-#   这样的方式获取输出。
-
 # bjson 模块工具初始化
 bjson_init ()
 {
@@ -301,7 +294,7 @@ bjson_d_ffile ()
 
 bjson_d_fstr ()
 {
-    printf "%s" "$1" | gobolt json -m d -k stdin -P "${@:2}"
+    printf "%s" "$1" | gobolt json -m d -k stdin -P -- "${@:2}"
 }
 
 # 模块内部使用的函数

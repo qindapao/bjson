@@ -868,6 +868,38 @@ test_bjson_d_fstr ()
     return 0
 }
 
+test_bjson_map_to_json ()
+{
+    declare -A xx=([ab]=4 [56]="ggege")
+    local jstr=''
+    bjson_map_to_json xx jstr
+    
+    local expect_jstr=$'{\n    "56": "ggege",\n    "ab": "4"\n}'
+    if [[ "$jstr" != "$expect_jstr" ]] ; then
+        echo "${FUNCNAME[0]} test fail."
+        return 1
+    fi
+
+    echo "${FUNCNAME[0]} test pass."
+    return 0
+}
+
+test_bjson_arr_to_json ()
+{
+    declare -a xx=(4 "ggege" "中文
+gegeg gege 其它的")
+    local jstr=''
+    bjson_arr_to_json xx jstr
+
+    local expect_jstr="[\"4\",\"ggege\",\"中文\\ngegeg gege 其它的\"]"
+    if [[ "$jstr" != "$expect_jstr" ]] ; then
+        echo "${FUNCNAME[0]} test fail."
+        return 1
+    fi
+
+    echo "${FUNCNAME[0]} test pass."
+    return 0
+}
 
 # :TODO: 增加读取的情况下，连续嵌套的时候是否能正确。
 bjson_init &&
@@ -886,5 +918,7 @@ test_bjson_r_to_var_ffile_bjson_r_to_var_fstr &&
 test_bjson_get_attr_ffile &&
 test_bjson_get_attr_fstr &&
 test_bjson_d_ffile &&
-test_bjson_d_fstr
+test_bjson_d_fstr &&
+test_bjson_map_to_json &&
+test_bjson_arr_to_json
 
