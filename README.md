@@ -1,33 +1,34 @@
 # bjson
-在bash脚本中方便使用JSON。每个函数的使用方法可以参考：`bjson_test.sh`。
+
+Convenient use of JSON in bash scripts. For how to use each function, please refer to：`bjson_test.sh`.
 
 ## Environmental requirements
 
 The current bash library requires command line tools [gobolt](https://github.com/qindapao/common_tool) .
 
-## JSON的对象转换成bash的关联数组
+## Convert JSON object to bash associative array
 
-转换后的关联数组中，键是原始值，但是值的话，会增加一个属性标记。所以的属性标记有:
+In the converted associative array, the key is the original value, but for the value, an attribute tag will be added. So the attribute tags have:
 
-- `s:` 字符串
-- `i:` 数字
+- `s:` string
+- `i:` number
 - `f:` bool false
 - `t:` bool true
-- `o:` 对象
-- `a:` 数组
+- `o:` object
+- `a:` array
 - `n:` null
 
 
-## JSON的数组转换成bash的数组
+## Convert JSON array to bash array
 
-转换后的数组中，数组的每个值都会增加一个属性标记。所以的属性标记和上面相同。
+In the converted array, an attribute tag will be added to each value of the array. All attribute tags are the same as above.
 
-## bash的关联数组转换成JSON的对象
+## Convert bash associative array to JSON object
 
-关联数组的每个值的前面都必须打上属性标记的标签。然后才能序列化成JSON对象。
+Each value in an associative array must be preceded by an attribute tag. Then it can be serialized into a JSON object.
 
-## bash的数组转换成JSON的数组
+## Convert bash array to JSON array
 
-数组的每个值的前面都必须打上属性标记的标签。然后才能序列化成JSON的数组。
+Each value in the array must be preceded by an attribute tag. Then it can be serialized into a JSON array.
 
 
