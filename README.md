@@ -3,8 +3,8 @@
 
 ## Environmental requirements
 
-The current bash library requires command line tools `gobolt` .
-Regarding the construction of the `gobolt` tool, I will sort it out later.
+The current bash library requires command line tools [gobolt](https://github.com/qindapao/common_tool) .
+
 ## JSON的对象转换成bash的关联数组
 
 转换后的关联数组中，键是原始值，但是值的话，会增加一个属性标记。所以的属性标记有:
