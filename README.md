@@ -1,6 +1,6 @@
 # bjson
 
-Convenient use of JSON in bash scripts. For how to use each function, please refer to£º`bjson_test.sh`.
+Convenient use of JSON in bash scripts. For how to use each function, please refer to: `bjson_test.sh`.
 
 ## Environmental requirements
 

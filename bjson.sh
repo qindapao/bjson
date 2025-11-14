@@ -1,4 +1,5 @@
 [[ "$BJSON_IS_SOURCED" == '1' ]] && return
+export LANG=en_US.UTF-8
 BJSON_IS_SOURCED=1
 BJSON_SOURCE_PATH="${BASH_SOURCE[0]%/*}"
 BJSON_CMD="gobolt"
@@ -380,6 +381,26 @@ bjson_r_to_var_fstr_raw ()
 }
 
 # ---------------------------- 人类更加友好的方式打印 -------------------------
+# [\u1100-\u115F\u2E80-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]
+#   vim 中字符打印方法:
+#       Ctrl-v uXXXX
+#   vim 中通过字符打印编码方法:
+#       :echo printf("U+%04X", char2nr('你'))
+#   ᄀ: U+1100    
+#   ᇿ : 
+#       U+11FF
+#   ⺀: U+2E80
+#   ꟏ : U+A7CF
+#   가: U+AC00
+#   힣: U+D7A3
+#   豈: U+F900
+#   﫿: U+FAFF
+#   ︰: U+FE30
+#  ﹏ : U+FE4F
+#   ＀ : U+FF00
+#  ｠ : U+FF60
+#  ￠ : U+FFE0
+#  ￦ : U+FFE6
 _bjson_line_display_max() {
     awk '
     BEGIN {
@@ -388,8 +409,8 @@ _bjson_line_display_max() {
     {
         line = $0
         total = length(line)
-        wide = gsub(/[\u1100-\u115F\u2E80-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]/, "")
-        width = total + wide * 2
+        wide = gsub(/[ᄀ-ᇿ⺀-꟏가-힣豈-﫿︰-﹏＀-｠￠-￦]/, "")
+        width = total + wide
         if (width > max) max = width
     }
     END {
@@ -415,7 +436,7 @@ _bjson_diff ()
     local bjson1="$1" bjson2="$2"
     local max1=$(printf "%s" "$bjson1" | _bjson_line_display_max)
     local max2=$(printf "%s" "$bjson2" | _bjson_line_display_max)
-    local width=$((max1+max2+10))
+    local width=$((max1 > max2 ? max1 * 2 + 4 : max2 * 2 + 4))
     echo "$width"
     diff --minimal --side-by-side --expand-tabs --tabsize=4 --color --width=${width} -y <(printf "%s" "$bjson1") <(printf "%s" "$bjson2")
 }

@@ -1915,11 +1915,32 @@ test_beauty_print ()
 
     printf "%s" "$demo2" > demo2.json
     printf "%s" "$demo3" > demo3.json
-    bjson_bprint_fstr "$demo2"
-    bjson_bprint_ffile "demo2.json"
+    # bjson_bprint_fstr "$demo2"
+    bjson_bprint_ffile "demo2.json" > demo2_check.txt
 
     bjson_diff_fstr "$demo2" "$demo3" > diff1.txt
     bjson_diff_ffile "demo2.json" "demo3.json" > diff2.txt
+
+    # 因为上面diff的结果非0
+    echo "${FUNCNAME[0]} test pass."
+    return 0
+}
+
+test_bjson_line_dispaly_max ()
+{
+    local demo='我是谁
+其实这个不重要哈哈哈哈哈m
+ddddddddddddddddd
+'
+
+    local max=$(printf "%s" "$demo" | _bjson_line_display_max)
+    if [[ "$max" != '25' ]] ; then
+        echo "${FUNCNAME[0]} test fail 1."
+        return 1
+    fi
+
+    echo "${FUNCNAME[0]} test pass."
+    return 0
 }
 
 # :TODO: 增加读取的情况下，连续嵌套的时候是否能正确。
@@ -1949,5 +1970,6 @@ test_bjson_r_to_var_ffile_raw &&
 test_bjson_r_to_var_fstr_raw &&
 test_bjson_r_to_var_fstr_null_and_type &&
 test_bjson_r_to_jstr_fstr_null_and_type &&
-test_beauty_print
+test_beauty_print &&
+test_bjson_line_dispaly_max
 
