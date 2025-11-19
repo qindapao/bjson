@@ -61,20 +61,30 @@ _bjson_quote ()
     if ((${#bjsonQuoteR_str}>6666)) ; then
         bjsonQuoteR_str=$(printf "%s" "$bjsonQuoteR_str" | gobolt json -m s -k stdin)
     else
-        # 反斜杠的处理必须放到最前面
-        bjsonQuoteR_str=${bjsonQuoteR_str//\\/\\\\}   # 替换 \ 为 \\
-        bjsonQuoteR_str=${bjsonQuoteR_str//\"/\\\"}   # 替换 " 为 \"
-        bjsonQuoteR_str=${bjsonQuoteR_str//$'\n'/\\n} # 替换换行符
-        bjsonQuoteR_str=${bjsonQuoteR_str//$'\r'/\\r} # 替换回车符
-        bjsonQuoteR_str=${bjsonQuoteR_str//$'\t'/\\t} # 替换制表符
-        bjsonQuoteR_str=${bjsonQuoteR_str//$'\b'/\\b} # 替换退格符
-        bjsonQuoteR_str=${bjsonQuoteR_str//$'\a'/\\a} # 替换响铃符（可选）
-        bjsonQuoteR_str=${bjsonQuoteR_str//$'\f'/\\f} # 替换翻页符
-        # 嵌入 HTML 时才需要转义
-        # bjsonQuoteR_str=${bjsonQuoteR_str//\//\\\/} # 可选
+        local bjsonQuoteV_tmp
+        # 优先处理反斜杠和双引号
+        bjsonQuoteV_tmp=${bjsonQuoteR_str//\\/\\\\}   # 替换 \ 为 \\
+        bjsonQuoteV_tmp=${bjsonQuoteV_tmp//\"/\\\"}   # 替换 " 为 \"
 
-        # 最后双引号包裹字符串
-        bjsonQuoteR_str="\"$bjsonQuoteR_str\""
+        # 替换 5 个常见控制字符
+        bjsonQuoteV_tmp=${bjsonQuoteV_tmp//$'\n'/\\n} # 替换换行符
+        bjsonQuoteV_tmp=${bjsonQuoteV_tmp//$'\r'/\\r} # 替换回车符
+        bjsonQuoteV_tmp=${bjsonQuoteV_tmp//$'\t'/\\t} # 替换制表符
+        bjsonQuoteV_tmp=${bjsonQuoteV_tmp//$'\b'/\\b} # 替换退格符
+        bjsonQuoteV_tmp=${bjsonQuoteV_tmp//$'\f'/\\f} # 替换翻页符
+
+        # 嵌入 HTML 时才需要转义
+        # bjsonQuoteV_tmp=${bjsonQuoteV_tmp//\//\\\/} # 可选
+
+        # 检查是否还有其它控制字符(0x00-0x1F 0x7F)
+        if [[ "$bjsonQuoteV_tmp" =~ [[:cntrl:]] ]] ; then
+            # 0x00(null) 会被Go的JSON库干掉，并且截断(后面的字符都不会出现)
+            # 0x7f(DEL)  会被原样保留
+            bjsonQuoteR_str=$(printf "%s" "$bjsonQuoteR_str" | gobolt json -m s -k stdin)
+        else
+            # 最后双引号包裹字符串
+            bjsonQuoteR_str="\"$bjsonQuoteV_tmp\""
+        fi
     fi
 }
 
@@ -418,7 +428,6 @@ _bjson_line_display_max() {
     }'
 }
 
-
 # $1: 需要读取的JSON字符串
 # $2~: 键列表
 bjson_bprint_fstr ()
@@ -437,7 +446,6 @@ _bjson_diff ()
     local max1=$(printf "%s" "$bjson1" | _bjson_line_display_max)
     local max2=$(printf "%s" "$bjson2" | _bjson_line_display_max)
     local width=$((max1 > max2 ? max1 * 2 + 4 : max2 * 2 + 4))
-    echo "$width"
     diff --minimal --side-by-side --expand-tabs --tabsize=4 --color --width=${width} -y <(printf "%s" "$bjson1") <(printf "%s" "$bjson2")
 }
 

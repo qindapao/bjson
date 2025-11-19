@@ -1943,6 +1943,69 @@ ddddddddddddddddd
     return 0
 }
 
+test__bjson_quote ()
+{
+    local -A test_cases=(
+        ["hello world"]='"hello world"'
+        ["line1\nline2"]='"line1\\nline2"'
+        ["tab\tseparated"]='"tab\\tseparated"'
+        ["quote\"inside"]='"quote\"inside"'
+        ["backslash\\inside"]='"backslash\\inside"'
+        [$'x0\x00']='"x0"'
+        [$'\x01x1']='"\u0001x1"'
+        [$'\x02x2']='"\u0002x2"'
+        [$'\x03x3']='"\u0003x3"'
+        [$'\x04x4']='"\u0004x4"'
+        [$'\x05x5']='"\u0005x5"'
+        [$'\x06x6']='"\u0006x6"'
+        [$'\x07x7']='"\u0007x7"'
+        [$'\x08x8']='"\bx8"'
+        [$'\x09x9']='"\tx9"'
+        [$'\x0axa']='"\nxa"'
+        [$'\x0bxb']='"\u000bxb"'
+        [$'\x0cxc']='"\fxc"'
+        [$'\x0dxd']='"xd"'
+        [$'\x0exe']='"\u000exe"'
+        [$'\x0fxf']='"\u000fxf"'
+        [$'\x10x10']='"\u0010x10"'
+        [$'\x11x11']='"\u0011x11"'
+        [$'\x12x12']='"\u0012x12"'
+        [$'\x13x13']='"\u0013x13"'
+        [$'\x14x14']='"\u0014x14"'
+        [$'\x15x15']='"\u0015x15"'
+        [$'\x16x16']='"\u0016x16"'
+        [$'\x17x17']='"\u0017x17"'
+        [$'\x18x18']='"\u0018x18"'
+        [$'\x19x19']='"\u0019x19"'
+        [$'\x1ax1a']='"\u001ax1a"'
+        [$'\x1bx1b']='"\u001bx1b"'
+        [$'\x1cx1c']='"\u001cx1c"'
+        [$'\x1dx1d']='"\u001dx1d"'
+        [$'\x1ex1e']='"\u001ex1e"'
+        [$'\x1fx1f']='"\u001fx1f"'
+        [$'\x7fx7F']='"x7F"'
+        [$'\x32x32']='"2x32"'
+        [$'null\x00char']='"null"'
+        ["中文"]='"中文"'
+    )
+    local s
+    for s in "${!test_cases[@]}"; do
+        local tmp="$s"
+        _bjson_quote tmp
+        if [[ "$tmp" != "${test_cases[$s]}" ]] ; then
+            echo "------"
+            echo "原始:      [$s]"
+            echo "JSON:      [$tmp]"
+            echo "JSON SPEC: [${test_cases[$s]}]"
+            
+            echo "${FUNCNAME[0]} test fail."
+            return 1
+        fi
+    done
+    echo "${FUNCNAME[0]} test pass."
+    return 0
+}
+
 # :TODO: 增加读取的情况下，连续嵌套的时候是否能正确。
 bjson_init &&
 test_bjson_w_str_to_jfile &&
@@ -1971,5 +2034,6 @@ test_bjson_r_to_var_fstr_raw &&
 test_bjson_r_to_var_fstr_null_and_type &&
 test_bjson_r_to_jstr_fstr_null_and_type &&
 test_beauty_print &&
-test_bjson_line_dispaly_max
+test_bjson_line_dispaly_max &&
+test__bjson_quote
 
