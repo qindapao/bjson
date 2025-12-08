@@ -2006,6 +2006,76 @@ test__bjson_quote ()
     return 0
 }
 
+# 当前msys2的bash发现一个BUG，$'\r'出现在数组定义的字面量中的时候会被丢弃
+# arr=($'\r') 这是无效的
+# arr[0]=$'\r' 这样才可以
+test_invisible_characters ()
+{
+    # $'\000'  # NUL (0)
+    # $'\001'  # SOH (1)
+    # $'\002'  # STX (2)
+    # $'\003'  # ETX (3)
+    # $'\004'  # EOT (4)
+    # $'\005'  # ENQ (5)
+    # $'\006'  # ACK (6)
+    # $'\007'  # BEL (7)
+    # $'\010'  # BS  (8)
+    # $'\011'  # HT  (9)
+    # $'\012'  # LF  (10)
+    # $'\013'  # VT  (11)
+    # $'\014'  # FF  (12)
+    # $'\015'  # CR  (13)
+    # $'\016'  # SO  (14)
+    # $'\017'  # SI  (15)
+    # $'\020'  # DLE (16)
+    # $'\021'  # DC1 (17)
+    # $'\022'  # DC2 (18)
+    # $'\023'  # DC3 (19)
+    # $'\024'  # DC4 (20)
+    # $'\025'  # NAK (21)
+    # $'\026'  # SYN (22)
+    # $'\027'  # ETB (23)
+    # $'\030'  # CAN (24)
+    # $'\031'  # EM  (25)
+    # $'\032'  # SUB (26)
+    # $'\033'  # ESC (27)
+    # $'\034'  # FS  (28)
+    # $'\035'  # GS  (29)
+    # $'\036'  # RS  (30)
+    # $'\037'  # US  (31)
+    # $'\177'  # DEL (127)
+    local -a invisible_values=(
+        # \000 会被Go的JSON库截断，后面的字符都不会再出现了
+        # 所以这里不插入\000字符
+        ""
+        $'s:\u200B\u200C\u200D\uFEFF\u2060\u180E'
+        )
+
+    invisible_values[0]=$'s:\E\a\b\t\n\v\f\r\\\'\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\177'
+    invisible_values[2]=$'s:\b\t\n\f\r\\\''
+
+    local json_str
+    json_str=$(bjson_w_arr_to_jstr '{}' invisible_values "invalid")
+    local null_1 null_2 null_3
+    null_1=$(bjson_r_to_var_fstr "$json_str" invalid 0)
+    null_2=$(bjson_r_to_var_fstr "$json_str" invalid 1)
+    null_3=$(bjson_r_to_var_fstr "$json_str" invalid 2)
+    local spec1 spec2 spec3
+    spec1=$'\E\a\b\t\n\v\f\r\\\'\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\177'
+    spec2=$'\u200B\u200C\u200D\uFEFF\u2060\u180E'
+    spec3=$'\b\t\n\f\r\\\''
+    
+    if [[ "${null_1%?}" != "$spec1" ]] ||
+        [[ "${null_2%?}" != "$spec2" ]] ||
+        [[ "${null_3%?}" != "$spec3" ]] ; then
+        echo "${FUNCNAME[0]} test fail."
+        return 1
+    fi
+
+    echo "${FUNCNAME[0]} test pass."
+    return 0
+}
+
 # :TODO: 增加读取的情况下，连续嵌套的时候是否能正确。
 bjson_init &&
 test_bjson_w_str_to_jfile &&
@@ -2035,5 +2105,6 @@ test_bjson_r_to_var_fstr_null_and_type &&
 test_bjson_r_to_jstr_fstr_null_and_type &&
 test_beauty_print &&
 test_bjson_line_dispaly_max &&
-test__bjson_quote
+test__bjson_quote &&
+test_invisible_characters
 
